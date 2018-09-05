@@ -14,7 +14,9 @@ class Stat:
         self.loc = json['loc']
         self.updates = json['updates']
 
-    def update_stat(self, stamp: float, is_up: list = [False]):
+    def update_stat(self, stamp: float, is_up=None):
+        if is_up is None:
+            is_up = [False]
         self.updates.update({stamp: is_up})
 
     def get_json(self):
@@ -28,7 +30,7 @@ def create_stat(result: CheckResult, timestamp: float):
     return Stat(result.pip,
                 json={'proto': result.proto,
                       'loc': result.country + ', ' + result.city,
-                      'updates': [timestamp, True, result.time_took]})
+                      'updates': {timestamp: [True, result.time_took]}})
 
 
 def load_stats() -> (list, None):

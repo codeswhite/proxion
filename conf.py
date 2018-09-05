@@ -20,9 +20,8 @@ class Config:
         cls.list_file = 'proxylist.txt'
         cls.stats_file = 'proxy-stats.json'
 
-        # Protocols
-        cls.socks = cls.hyper = False
-        cls.http_only = cls.https_only = cls.socks4_only = cls.socks5_only = False
+        # Proto
+        cls.protocols = None
 
     @classmethod
     def parse_args(cls):
@@ -56,7 +55,27 @@ class Config:
             cls.stats_file = args.stats_file
             prl('Stats file is now: ' + colored(args.stats_name, 'cyan'), PRL_VERB)
 
-        #
+        # Protocols
+        if args.socks:
+            cls.protocols = ('socks5', 'socks4')
+            prl('Checking only %s and %s' % (colored('SOCKS5', 'blue'), colored('SOCKS4', 'blue')))
+        elif args.hyper:
+            cls.protocols = ('https', 'http')
+            prl('Checking only %s and %s' % (colored('HTTP', 'blue'), colored('HTTPS', 'blue')))
+        elif args.socks5_only:
+            cls.protocols = tuple('socks5')
+            prl('Checking only %s' % colored('SOCKS5', 'blue'))
+        elif args.socks4_only:
+            cls.protocols = tuple('socks4')
+            prl('Checking only %s' % colored('SOCKS4', 'blue'))
+        elif args.https_only:
+            cls.protocols = tuple('https')
+            prl('Checking only %s' % colored('HTTPS', 'blue'))
+        elif args.http_only:
+            cls.protocols = tuple('http')
+            prl('Checking only %s' % colored('HTTP', 'blue'))
+        else:
+            cls.protocols = ('socks5', 'socks4', 'https', 'http')
 
 
 class Args:
@@ -90,6 +109,8 @@ class Args:
 
     @classmethod
     def proto_args(cls, args):
+        args = args.add_mutually_exclusive_group()
+
         args.add_argument('--socks', action='store_true',
                           help='Only check SOCKS4 & SOCKS5 protocols')
         args.add_argument('--hyper', action='store_true',

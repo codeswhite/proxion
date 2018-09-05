@@ -2,12 +2,12 @@ from os.path import join, isfile
 from random import choice
 from threading import active_count
 from time import sleep, time
-from typing import Generator
+from typing import Generator, Dict, List
 
-from checker import CheckerThread
+from checker import CheckerThread, CheckResult
 from conf import Config
 from stats import update_stats
-from utils import prl, PRL_VERB, PRL_WARN, PRL_ERR, check_proxy_format, cprint, colored
+from utils import prl, PRL_VERB, PRL_WARN, PRL_ERR, check_proxy_format, colored, clear
 
 banner = """
     ____                  _                      
@@ -16,6 +16,31 @@ banner = """
  / ____/ /  / /_/ />  </ / /_/ / / / / 
 /_/   /_/   \____/_/|_/_/\____/_/ /_/  
 """
+
+PROXY_TYPES = ('socks5', 'socks4', 'https', 'http')
+
+
+def show_status(working: List[CheckResult], down: List[str]) -> None:
+    clear(colored(banner, choice(('red', 'green', 'blue'))))
+    text = 'Working: '
+    protocols = sort_protocols(working)
+    for proto in protocols.keys():
+        if len(protocols[proto]) > 0:
+            text += ' %s:%s' % (colored(proto.upper(), 'blue'), colored(len(protocols[proto]), 'green'))
+    prl(text)
+    prl('Down: ' + colored(len(down), 'cyan'))
+    prl('Total tried: ' + colored(len(working) + len(down), 'cyan'))
+    print()
+
+
+def sort_protocols(working: List[CheckResult]) -> Dict[str, list]:
+    x = {}
+    for p in PROXY_TYPES:
+        x.update({p: []})
+
+    for i in working:
+        x[i.proto].append(i)
+    return x
 
 
 def load_list() -> (Generator[str, None, None], None):
@@ -52,7 +77,13 @@ def main():
     try:
         while active_count() - 1:
             sleep(5)
-            prl("%s active threads..." % colored(active_count() - 1, 'cyan'), PRL_VERB)
+            # prl("%s active threads..." % colored(active_count() - 1, 'cyan'), PRL_VERB)
+            w, d = [], []
+            for i in range(Config.threads):
+                w += threads[i].working
+                d += threads[i].down
+            show_status(w, d)
+
         prl("All threads done.")
     except KeyboardInterrupt:
         print()
@@ -70,7 +101,7 @@ def main():
 if __name__ == '__main__':
     try:
         c = Config()  # Initialize configuration
-        cprint(banner, choice(('red', 'green', 'blue')))
+        clear(colored(banner, choice(('red', 'green', 'blue'))))
         c.parse_args()  # Parse arguments
         main()  # Enter the Matrix
     except KeyboardInterrupt:

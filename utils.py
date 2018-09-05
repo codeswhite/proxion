@@ -4,6 +4,7 @@
 #
 
 from ipaddress import AddressValueError, IPv4Address
+from subprocess import call
 
 from termcolor import colored, cprint
 
@@ -95,3 +96,8 @@ def check_proxy_format(proxy) -> bool:
     if not is_ip_address(ip):
         return False
     return True
+
+
+def clear(text: str) -> None:
+    call('clear')
+    print(text)

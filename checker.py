@@ -6,7 +6,7 @@ from time import time
 import requests
 
 from conf import Config
-from utils import prl, PRL_WARN, PRL_VERB, PRL_ERR, colored
+from utils import prl, PRL_VERB, PRL_ERR, colored
 
 
 class CheckResult:
@@ -57,8 +57,6 @@ def perform_check(protocol: str, pip: str, timeout: float) -> (CheckResult, None
 
 
 class CheckerThread(threading.Thread):
-    PROXY_TYPES = ('socks5', 'socks4', 'https', 'http')
-
     def __init__(self, proxies_to_check: list):
         super(CheckerThread, self).__init__()
         if not Config.dont_shuffle:
@@ -67,19 +65,19 @@ class CheckerThread(threading.Thread):
         self.working, self.down = [], []
 
     def run(self):
-        # try:
+        # try
         while len(self.proxies_to_check) > 0:
             pip = self.proxies_to_check.pop(0)
             prl('Thread %s took: %s' % (colored(self.name, 'cyan'), colored(pip, 'green')), PRL_VERB)
 
-            for p in self.PROXY_TYPES:
+            for p in Config.protocols:
                 r = perform_check(p, pip, Config.timeout)
                 if r is not None:
-                    prl('Working %s proxy @ ' % colored(r.proto, 'blue') + colored(pip, 'green'))
+                    prl('Working %s proxy @ ' % colored(r.proto, 'blue') + colored(pip, 'green'), PRL_VERB)
                     self.working.append(r)
                     break
             else:
-                prl('Proxy is down!', PRL_WARN)
+                prl('Proxy is down!', PRL_VERB)
                 self.down.append(pip)
         # except Exception as e:
         #     prl('An "%s" exception occurred on %s!' % (e, colored(self.name)), PRL_ERR)
