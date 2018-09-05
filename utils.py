@@ -7,8 +7,6 @@ from ipaddress import AddressValueError, IPv4Address
 
 from termcolor import colored, cprint
 
-from conf import Config
-
 PRL_WARN = ('yellow', '!')
 PRL_SU = ('yellow', '#')
 PRL_ERR = ('red', 'X')
@@ -18,6 +16,7 @@ PRL_VERB = ('blue', '~')
 
 
 def prl(text: str, lvl: iter = ('green', '+'), attrib: list = ()) -> None:
+    from conf import Config
     if not Config.verbose and lvl == PRL_VERB:
         return
 
