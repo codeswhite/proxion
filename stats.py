@@ -1,6 +1,6 @@
 from json import loads, dumps, JSONDecodeError
 from os.path import join, isfile
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 from checker import CheckResult
 from conf import Config
@@ -33,7 +33,7 @@ def create_stat(result: CheckResult, timestamp: float):
                       'updates': {timestamp: [True, result.time_took]}})
 
 
-def load_stats() -> (list, None):
+def load_stats() -> (List[Stat], None):
     prl('Loading stats..', PRL_VERB)
     file = join(Config.workdir, Config.stats_file)
     if not isfile(file):
@@ -53,7 +53,7 @@ def load_stats() -> (list, None):
     return stats
 
 
-def save_stats(stats: list) -> None:
+def save_stats(stats: List[Stat]) -> None:
     prl('Saving stats..', PRL_VERB)
     file = join(Config.workdir, Config.stats_file)
 
@@ -65,17 +65,17 @@ def save_stats(stats: list) -> None:
         f.write(dumps(json))
 
 
-def update_stats(timestamp: float, working: List[CheckResult], down: list) -> None:
+def update_stats(timestamp: float, results: Tuple[List[CheckResult], List[str]]) -> None:
     prl('Updating stats..', PRL_VERB)
 
     stats = load_stats()
     if stats is None:
         stats = []
-    for d in down:
+    for d in results[1]:
         for s in stats:
             if s.pip == d:
                 s.update_stat(timestamp)
-    for w in working:
+    for w in results[0]:
         for s in stats:
             if w.pip == s.pip:
                 s.update_stat(timestamp, [True, w.time_took])

@@ -2,7 +2,7 @@ from os.path import join, isfile
 from random import choice
 from threading import active_count
 from time import sleep, time
-from typing import Generator, Dict, List
+from typing import Generator, Dict, List, Tuple
 
 from checker import CheckerThread, CheckResult
 from conf import Config
@@ -20,7 +20,8 @@ banner = """
 PROXY_TYPES = ('socks5', 'socks4', 'https', 'http')
 
 
-def show_status(working: List[CheckResult], down: List[str]) -> None:
+def show_status(results: Tuple[List[CheckResult], List[str]]) -> None:
+    working, down = results[0], results[1]
     clear(colored(banner, choice(('red', 'green', 'blue'))))
     text = 'Working: '
     protocols = sort_protocols(working)
@@ -41,6 +42,14 @@ def sort_protocols(working: List[CheckResult]) -> Dict[str, list]:
     for i in working:
         x[i.proto].append(i)
     return x
+
+
+def collect_results(threads: list):
+    w, d = [], []
+    for i in range(Config.threads):
+        w += threads[i].working
+        d += threads[i].down
+    return w, d
 
 
 def load_list() -> (Generator[str, None, None], None):
@@ -77,25 +86,14 @@ def main():
     try:
         while active_count() - 1:
             sleep(5)
-            # prl("%s active threads..." % colored(active_count() - 1, 'cyan'), PRL_VERB)
-            w, d = [], []
-            for i in range(Config.threads):
-                w += threads[i].working
-                d += threads[i].down
-            show_status(w, d)
-
+            show_status(collect_results(threads))
         prl("All threads done.")
     except KeyboardInterrupt:
         print()
         prl('Interrupted!', PRL_WARN)
     finally:
         prl('Saving checked..')
-        timestamp = time()
-        w, d = [], []
-        for i in range(Config.threads):
-            w += threads[i].working
-            d += threads[i].down
-        update_stats(timestamp, w, d)
+        update_stats(time(), collect_results(threads))
 
 
 if __name__ == '__main__':
