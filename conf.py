@@ -25,7 +25,7 @@ class Config:
 
     @classmethod
     def parse_args(cls):
-        from utils import prl, cyan, PRL_VERB, PRL_WARN
+        from utils import prl, colored, PRL_VERB, PRL_WARN
 
         args = Args.parse_arguments()
 
@@ -34,11 +34,11 @@ class Config:
 
         if args.timeout:
             cls.timeout = args.timeout
-            prl('Timeout set to' + cyan(cls.timeout), PRL_VERB)
+            prl('Timeout set to' + colored(cls.timeout, 'cyan'), PRL_VERB)
 
         if args.threads:
             cls.threads = args.threads
-            prl('Using %s threads' % cyan(cls.threads), PRL_VERB)
+            prl('Using %s threads' % colored(cls.threads, 'cyan'), PRL_VERB)
 
         if args.no_shuffle:
             cls.dont_shuffle = args.no_shuffle
@@ -46,24 +46,24 @@ class Config:
 
         if args.workdir:
             if not path.isdir(args.workdir):
-                prl('No such directory: ' + cyan(args.workdir), PRL_WARN)
+                prl('No such directory: ' + colored(args.workdir, 'cyan'), PRL_WARN)
             else:
                 cls.workdir = args.workdir
-                prl('Workdir is now: ' + cyan(args.workdir), PRL_VERB)
+                prl('Workdir is now: ' + colored(args.workdir, 'cyan'), PRL_VERB)
 
         if args.list_file:
             cls.list_file = args.list_file
-            prl('List file is now: ' + cyan(args.list_name), PRL_VERB)
+            prl('List file is now: ' + colored(args.list_name, 'cyan'), PRL_VERB)
 
         if args.stats_file:
             cls.stats_file = args.stats_file
-            prl('Stats file is now: ' + cyan(args.stats_name), PRL_VERB)
+            prl('Stats file is now: ' + colored(args.stats_name, 'cyan'), PRL_VERB)
 
 
 class Args:
     @classmethod
     def parse_arguments(cls):
-        from utils import cyan
+        from utils import colored
         parser = ArgumentParser()
 
         parser.add_argument('-v', '--verbose', action='store_true',
@@ -73,18 +73,18 @@ class Args:
                             help='How long should we wait for a response')
 
         parser.add_argument('--threads', type=int,
-                            help='How many threads should we run (default: %s)' % cyan(Config.threads))
+                            help='How many threads should we run (default: %s)' % colored(Config.threads, 'green'))
 
         parser.add_argument('--no-shuffle', action='store_true',
                             help="Don't shuffle proxy list after loading")
 
         parser.add_argument('--workdir', type=str,
-                            help='The working directory of the script (default: %s)' % cyan(Config.workdir))
+                            help='The working directory of the script (default: %s)' % colored(Config.workdir, 'green'))
 
         parser.add_argument('--list-file', type=str,
-                            help='The proxy-list file name (default: %s)' % cyan(Config.list_file))
+                            help='The proxy-list file name (default: %s)' % colored(Config.list_file, 'green'))
 
         parser.add_argument('--stats-file', type=str,
-                            help='The proxy-stats file name (default: %s)' % cyan(Config.stats_file))
+                            help='The proxy-stats file name (default: %s)' % colored(Config.stats_file, 'green'))
 
         return parser.parse_args()

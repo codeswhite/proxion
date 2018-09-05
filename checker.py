@@ -6,7 +6,7 @@ from time import time
 import requests
 
 from conf import Config
-from utils import prl, PRL_WARN, PRL_VERB, cyan, PRL_ERR
+from utils import prl, PRL_WARN, PRL_VERB, PRL_ERR, colored
 
 
 class CheckResult:
@@ -41,16 +41,15 @@ def perform_check(protocol: str, pip: str, timeout: float) -> (CheckResult, None
             # Attempt to decode the received data
             json = resp.json()
             return CheckResult(pip, protocol, json, t)
-        except JSONDecodeError as e:
+        except (JSONDecodeError, KeyError) as e:
             # Any failure will be a sign of the proxy not forwarding us,
             # but instead returning some custom data to us!
             prl('Status Code: %d, Text: \n%s' % (resp.status_code, resp.text), PRL_VERB)
-            prl('An JSON decoding error "%s" occurred!' % e, PRL_VERB)
-
+            prl('An JSON error "%s" occurred!' % e, PRL_VERB)
     except requests.ConnectionError:
-        prl('%s failed for %s' % (cyan(protocol), cyan(pip)), PRL_VERB)
+        prl('%s failed for %s' % (colored(protocol, 'blue'), colored(pip, 'green')), PRL_VERB)
     except requests.ReadTimeout:
-        prl('%s timed out for %s' % (cyan(protocol), cyan(pip)), PRL_VERB)
+        prl('%s timed out for %s' % (colored(protocol, 'blue'), colored(pip, 'green')), PRL_VERB)
     except requests.exceptions.InvalidSchema:
         prl('SOCKS dependencies unmet!', PRL_ERR)
         exit(-1)
@@ -60,7 +59,7 @@ def perform_check(protocol: str, pip: str, timeout: float) -> (CheckResult, None
 class CheckerThread(threading.Thread):
     PROXY_TYPES = ('socks5', 'socks4', 'https', 'http')
 
-    def __init__(self, proxies_to_check: (list, tuple)):  # TODO decide which type is proxies-to-check
+    def __init__(self, proxies_to_check: list):
         super(CheckerThread, self).__init__()
         if not Config.dont_shuffle:
             shuffle(proxies_to_check)
@@ -71,17 +70,17 @@ class CheckerThread(threading.Thread):
         # try:
         while len(self.proxies_to_check) > 0:
             pip = self.proxies_to_check.pop(0)
-            prl('Thread %s took: %s' % (cyan(self.name), cyan(pip)), PRL_VERB)
+            prl('Thread %s took: %s' % (colored(self.name, 'cyan'), colored(pip, 'green')), PRL_VERB)
 
             for p in self.PROXY_TYPES:
                 r = perform_check(p, pip, Config.timeout)
                 if r is not None:
-                    prl('Working %s proxy @ ' % cyan(r.proto) + pip)
+                    prl('Working %s proxy @ ' % colored(r.proto, 'blue') + colored(pip, 'green'))
                     self.working.append(r)
                     break
             else:
                 prl('Proxy is down!', PRL_WARN)
                 self.down.append(pip)
         # except Exception as e:
-        #     prl('An "%s" exception occurred on %s!' % (e, cyan(self.name)), PRL_ERR)
+        #     prl('An "%s" exception occurred on %s!' % (e, colored(self.name)), PRL_ERR)
         #     print(pip)

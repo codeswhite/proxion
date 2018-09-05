@@ -1,21 +1,49 @@
+from os.path import join, isfile
+from random import choice
 from threading import active_count
 from time import sleep, time
+from typing import Generator
 
 from checker import CheckerThread
 from conf import Config
-from disk import proxy_list, stat
-from utils import prl, PRL_VERB, PRL_WARN, cyan
+from stats import update_stats
+from utils import prl, PRL_VERB, PRL_WARN, PRL_ERR, check_proxy_format, cprint, colored
+
+banner = """
+    ____                  _                      
+   / __ \_________  _  __(_)___  ____  
+  / /_/ / ___/ __ \| |/_/ / __ \/ __ \ 
+ / ____/ /  / /_/ />  </ / /_/ / / / / 
+/_/   /_/   \____/_/|_/_/\____/_/ /_/  
+"""
+
+
+def load_list() -> (Generator[str, None, None], None):
+    prl('Loading proxies..', PRL_VERB)
+    file = join(Config.workdir, Config.list_file)
+    if not isfile(file):
+        prl('No such file: ' + file, PRL_ERR)
+        return
+
+    with open(file) as f:
+        for pip in f:
+            pip = pip.strip()
+            if not check_proxy_format(pip):
+                prl('Bad proxy format: "%s", skipping!' % pip, PRL_WARN)
+                continue
+            yield pip
 
 
 def main():
-    proxies_to_check = list(proxy_list.load_list())
+    proxies_to_check = list(load_list())
     if not proxies_to_check:
         prl('Seems we are out of fresh proxies!', PRL_WARN)
         return
 
     # Start threading
     threads = []
-    prl('Checking %s proxies on %s threads' % (cyan(len(proxies_to_check)), cyan(Config.threads)))
+    prl('Checking %s proxies on %s threads' % (
+        colored(len(proxies_to_check), 'green'), colored(Config.threads, 'cyan')))
     for i in range(Config.threads):
         threads.append(CheckerThread(proxies_to_check))
         threads[i].setDaemon(True)
@@ -24,8 +52,7 @@ def main():
     try:
         while active_count() - 1:
             sleep(5)
-            prl("%s active threads..." % cyan(active_count() - 1), PRL_VERB)
-            # TODO A pretty print that will show how many tried, how many failed (by different readsons) and how many from each pprotocol
+            prl("%s active threads..." % colored(active_count() - 1, 'cyan'), PRL_VERB)
         prl("All threads done.")
     except KeyboardInterrupt:
         print()
@@ -37,13 +64,13 @@ def main():
         for i in range(Config.threads):
             w += threads[i].working
             d += threads[i].down
-        stat.update_stats(timestamp, w, d)
+        update_stats(timestamp, w, d)
 
 
 if __name__ == '__main__':
     try:
         c = Config()  # Initialize configuration
-        # TODO print banner
+        cprint(banner, choice(('red', 'green', 'blue')))
         c.parse_args()  # Parse arguments
         main()  # Enter the Matrix
     except KeyboardInterrupt:

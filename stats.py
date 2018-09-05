@@ -59,7 +59,6 @@ def save_stats(stats: list) -> None:
     for s in stats:
         json.update(s.get_json())
 
-    print(json)
     with open(file, 'w') as f:
         f.write(dumps(json))
 

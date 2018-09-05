@@ -3,7 +3,7 @@
 ##
 #
 
-from subprocess import call, check_output, DEVNULL, CalledProcessError
+from ipaddress import AddressValueError, IPv4Address
 
 from termcolor import colored, cprint
 
@@ -58,24 +58,6 @@ def choose(options: iter = ('Yes', 'No'), prompt: str = 'Choose action:', defaul
         return -1  # Probably text received
 
 
-def ask(question: str) -> (None, str):
-    """
-    Ask the user something
-    :param question:
-    :return: the response, None if no response
-    ** Expect a KeyboardInterrupt!!
-    """
-    prl(question, PRL_CHOICE)
-    answer = input('>')
-    if answer == '':
-        return None
-    try:
-        answer = int(answer)
-    except ValueError:
-        pass
-    return answer
-
-
 def pause(reason: str, cancel: bool = False):
     s = 'Press %s to %s' % (colored('[ENTER]', 'cyan'), reason)
     if cancel:
@@ -89,109 +71,19 @@ def pause(reason: str, cancel: bool = False):
         return False
 
 
-def cyan(text) -> str:
-    return colored(str(text), 'cyan')
-
-
-def banner(txt: str, style: str = 'slant') -> str:
-    """
-    Depends on: "pyfiglet"
-    :param txt: The text to return as an ASCII art
-    :param style: The style (From: /usr/lib/python3.6/site-packages/pyfiglet/fonts/)
-    :return: The created ASCII art
-    """
+def is_ip_address(ip: str) -> bool:
     try:
-        from pyfiglet import Figlet
-    except ImportError:
-        prl('Module "pyfiglet" not installed, rendering legacy banner', PRL_ERR)
-        return '~=~=~ %s ~=~=~' % txt
-    f = Figlet(font=style)
-    return f.renderText(text=txt)
-
-
-def get_date() -> str:
-    """
-    :return: today's date (e.g. "28.11.2017" ;P)
-    """
-    from datetime import datetime
-    return datetime.now().strftime("%d.%m.%Y")
-
-
-# def is_mac(mac: str) -> bool:
-#     """
-#     Check if the specified string is a mac address
-#     Bytes delimiter can be either '-' or ':'
-#     The MAC string is stripped.
-#     :param mac: The MAC address string
-#     :return: True if the MAC address is valid
-#     """
-#     return bool(match("[0-9a-f]{2}([-:])[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$", mac.strip().lower()))
-
-
-def is_package(package_name) -> (str, None):
-    """
-    Check if a system package is installed
-
-    :param package_name: Package to check
-    :return: The version of the installed package or None if no such package
-    """
-    try:
-        return check_output(['/usr/bin/pacman', '-Q', package_name], stderr=DEVNULL).decode().strip().split(' ')[1]
-    except CalledProcessError:
-        pass
-    try:
-        return check_output(('apt', 'list', '-qq', package_name)).decode().split(' ')[1]
-    except CalledProcessError:
-        pass
-    return None
-
-
-# def get_net() -> (None, dict):
-#     # Uses iproute2 (ip)
-#
-#     # Example raw:
-#     # default via 192.168.1.1 dev eth0
-#     # 192.168.1.0/24 dev eth0 proto kernel scope link src 192.168.1.28
-#
-#     raw = check_output(['ip', 'route']).decode().strip().split('\n')
-#     d = {}
-#     if not raw or 'default' not in raw[0]:
-#         return None  # No route
-#     else:
-#         d.update({'default': raw[0].split(' ')[2:5:2]})  # default: (gateway, interface)
-#
-#     for li in raw[1:]:
-#         ls = li.split(' ')
-#         d.update({ls[2]: {'interface': ls[2], 'subnet': ls[0], 'ip': ls[8]}})
-#
-#     return d
-
-
-def ping(ip: str, count: int = 1, timeout: int = 1) -> bool:
-    """
-    Depends on: "iputils"
-    A binding for system call ping
-    :param ip: Destination
-    :param count: How much ping requests to send
-    :param timeout: How long wait for a reply
-    :return: A boolean that represents success of the ping
-    """
-    if count < 1:
-        raise ValueError('Count cannot be lower than 1')
-    try:
-        return call(['ping', '-c', str(count), '-w', str(timeout), ip], stdout=DEVNULL, stderr=DEVNULL) == 0
-    except CalledProcessError:
-        pass
-    except KeyboardInterrupt:
-        prl('[utils] Ping interrupted!', PRL_WARN)
-    return False
+        IPv4Address(ip)
+        return True
+    except AddressValueError:
+        return False
 
 
 # Check that the given proxy is a string and has a valid address + port
-def check_proxy_format(proxy_to_check):
-    if type(proxy_to_check) is not str:
+def check_proxy_format(proxy) -> bool:
+    if type(proxy) is not str:
         return False
-    x = proxy_to_check.strip().split(':')
+    x = proxy.strip().split(':')
     if len(x) != 2:
         return False
     ip, port = x
@@ -201,5 +93,6 @@ def check_proxy_format(proxy_to_check):
         return False
     if port < 0 or port > 65535:
         return False
-    # TODO: Add ip address verity check
+    if not is_ip_address(ip):
+        return False
     return True
