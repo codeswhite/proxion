@@ -28,14 +28,14 @@ def create_proxy_dict(pip: str, proto: str, ep_proto: str) -> dict:
     return {ep_proto: proto + '://' + pip}
 
 
-def perform_check(protocol: str, pip: str, timeout: float) -> (CheckResult, None):
+def perform_check(protocol: str, pip: str) -> (CheckResult, None):
     try:
         endpoint_protocol = protocol if protocol == 'http' else 'https'
         t = time()
         # Attempt to get our current IP (use the proxy), expect JSON data!
         resp = requests.get(endpoint_protocol + '://ipinfo.io',
                             proxies=create_proxy_dict(pip, protocol, endpoint_protocol),
-                            timeout=timeout)
+                            timeout=Config.timeout)
         t = time() - t
         try:
             # Attempt to decode the received data
@@ -71,7 +71,7 @@ class CheckerThread(threading.Thread):
             prl('Thread %s took: %s' % (colored(self.name, 'cyan'), colored(pip, 'green')), PRL_VERB)
 
             for p in Config.protocols:
-                r = perform_check(p, pip, Config.timeout)
+                r = perform_check(p, pip)
                 if r is not None:
                     prl('Working %s proxy @ ' % colored(r.proto, 'blue') + colored(pip, 'green'), PRL_VERB)
                     self.working.append(r)
