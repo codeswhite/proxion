@@ -40,12 +40,15 @@ def perform_check(protocol: str, pip: str) -> (CheckResult, None):
         try:
             # Attempt to decode the received data
             json = resp.json()
-            return CheckResult(pip, protocol, json, t)
-        except (JSONDecodeError, KeyError) as e:
+            try:
+                return CheckResult(pip, protocol, json, t)
+            except KeyError as e:
+                prl('Result parsing "%s":' % e + json, PRL_VERB)
+        except JSONDecodeError as e:
             # Any failure will be a sign of the proxy not forwarding us,
             # but instead returning some custom data to us!
             prl('Status Code: %d, Text: \n%s' % (resp.status_code, resp.text), PRL_VERB)
-            prl('An JSON error "%s" occurred!' % e, PRL_VERB)
+            prl('An JSON Decode error "%s" occurred!' % e, PRL_VERB)
     except requests.ConnectionError:
         prl('%s failed for %s' % (colored(protocol, 'blue'), colored(pip, 'green')), PRL_VERB)
     except requests.ReadTimeout:
