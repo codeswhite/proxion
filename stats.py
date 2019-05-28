@@ -9,24 +9,25 @@ from utils import prl, PRL_VERB
 
 class Stat:
     def __init__(self, pip: str, json: Dict[str, dict]):
+        # Deserialize
         self.pip = pip
         self.proto = json['proto']
         self.loc = json['loc']
         self.updates = json['updates']
 
-    def update_stat(self, stamp: float, is_up=None):
+    def update(self, stamp: float, is_up=None):
         if is_up is None:
             is_up = [False]
         self.updates.update({stamp: is_up})
 
-    def get_json(self):
+    def serialize(self):
         return {self.pip: {'proto': self.proto,
                            'loc': self.loc,
                            'updates': self.updates}}
 
 
 def create_stat(result: CheckResult, timestamp: float):
-    # The creation of new stats
+    # New stat from CheckResult
     return Stat(result.pip,
                 json={'proto': result.proto,
                       'loc': result.country + ', ' + result.city,
@@ -34,7 +35,6 @@ def create_stat(result: CheckResult, timestamp: float):
 
 
 def load_stats() -> (List[Stat], None):
-    prl('Loading stats..', PRL_VERB)
     file = join(Config.workdir, Config.stats_file)
     if not isfile(file):
         return
@@ -59,7 +59,7 @@ def save_stats(stats: List[Stat]) -> None:
 
     json = {}
     for s in stats:
-        json.update(s.get_json())
+        json.update(s.serialize())
 
     with open(file, 'w') as f:
         f.write(dumps(json))
@@ -70,15 +70,16 @@ def update_stats(timestamp: float, results: Tuple[List[CheckResult], List[str]])
 
     stats = load_stats()
     if stats is None:
+        prl('No stats file found, creating new', PRL_VERB)
         stats = []
-    for d in results[1]:
-        for s in stats:
-            if s.pip == d:
-                s.update_stat(timestamp)
-    for w in results[0]:
-        for s in stats:
-            if w.pip == s.pip:
-                s.update_stat(timestamp, [True, w.time_took])
+    for down in results[1]:
+        for stat in stats:
+            if stat.pip == down:
+                stat.update(timestamp)
+    for working in results[0]:
+        for stat in stats:
+            if working.pip == stat.pip:
+                stat.update(timestamp, [True, working.time_took])
         else:
-            stats.append(create_stat(w, timestamp))
+            stats.append(create_stat(working, timestamp))
     save_stats(stats)

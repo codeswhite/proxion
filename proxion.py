@@ -23,7 +23,7 @@ PROXY_TYPES = ('socks5', 'socks4', 'https', 'http')
 def show_status(results: Tuple[List[CheckResult], List[str]]) -> None:
     working, down = results[0], results[1]
     clear(colored(banner, choice(('red', 'green', 'blue'))))
-    text = 'Working: '
+    text = 'Working:'
     protocols = sort_protocols(working)
     for proto in protocols.keys():
         if len(protocols[proto]) > 0:
@@ -45,11 +45,11 @@ def sort_protocols(working: List[CheckResult]) -> Dict[str, list]:
 
 
 def collect_results(threads: list):
-    w, d = [], []
+    working, down = [], []
     for i in range(Config.threads):
-        w += threads[i].working
-        d += threads[i].down
-    return w, d
+        working += threads[i].working
+        down += threads[i].down
+    return working, down
 
 
 def load_list() -> (Generator[str, None, None], None):
