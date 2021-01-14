@@ -3,10 +3,11 @@ from json.decoder import JSONDecodeError
 from random import shuffle
 from time import time
 
-import requests
+from .conf import Config
 
-from conf import Config
-from utils import prl, PRL_VERB, PRL_ERR, colored
+import requests
+from termcolor import colored
+from interutils import pr
 
 
 class CheckResult:
@@ -43,18 +44,18 @@ def perform_check(protocol: str, pip: str) -> (CheckResult, None):
             try:
                 return CheckResult(pip, protocol, json, t)
             except KeyError as e:
-                prl('Result parsing "%s":' % e + json, PRL_VERB)
+                pr('Result parsing "%s":' % e + json, '*')
         except JSONDecodeError as e:
             # Any failure will be a sign of the proxy not forwarding us,
             # but instead returning some custom data to us!
-            prl('Status Code: %d, Text: \n%s' % (resp.status_code, resp.text), PRL_VERB)
-            prl('An JSON Decode error "%s" occurred!' % e, PRL_VERB)
+            pr('Status Code: %d, Text: \n%s' % (resp.status_code, resp.text), '*')
+            pr('An JSON Decode error "%s" occurred!' % e, '*')
     except requests.ConnectionError:
-        prl('%s failed for %s' % (colored(protocol, 'blue'), colored(pip, 'green')), PRL_VERB)
+        pr('%s failed for %s' % (colored(protocol, 'blue'), colored(pip, 'green')), '*')
     except requests.ReadTimeout:
-        prl('%s timed out for %s' % (colored(protocol, 'blue'), colored(pip, 'green')), PRL_VERB)
+        pr('%s timed out for %s' % (colored(protocol, 'blue'), colored(pip, 'green')), '*')
     except requests.exceptions.InvalidSchema:
-        prl('SOCKS dependencies unmet!', PRL_ERR)
+        pr('SOCKS dependencies unmet!', 'X')
         exit(-1)
     return None
 
@@ -71,17 +72,17 @@ class CheckerThread(threading.Thread):
         # try
         while len(self.proxies_to_check) > 0:
             pip = self.proxies_to_check.pop(0)
-            prl('Thread %s took: %s' % (colored(self.name, 'cyan'), colored(pip, 'green')), PRL_VERB)
+            pr('Thread %s took: %s' % (colored(self.name, 'cyan'), colored(pip, 'green')), '*')
 
             for p in Config.protocols:
                 r = perform_check(p, pip)
                 if r is not None:
-                    prl('Working %s proxy @ ' % colored(r.proto, 'blue') + colored(pip, 'green'), PRL_VERB)
+                    pr('Working %s proxy @ ' % colored(r.proto, 'blue') + colored(pip, 'green'), '*')
                     self.working.append(r)
                     break
             else:
-                prl('Proxy is down!', PRL_VERB)
+                pr('Proxy is down!', '*')
                 self.down.append(pip)
         # except Exception as e:
-        #     prl('An "%s" exception occurred on %s!' % (e, colored(self.name)), PRL_ERR)
+        #     pr('An "%s" exception occurred on %s!' % (e, colored(self.name)), 'X')
         #     print(pip)

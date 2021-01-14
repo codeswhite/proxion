@@ -2,9 +2,10 @@ from json import loads, dumps, JSONDecodeError
 from os.path import join, isfile
 from typing import List, Dict, Tuple
 
-from checker import CheckResult
-from conf import Config
-from utils import prl, PRL_VERB
+from .checker import CheckResult
+from .conf import Config
+
+from interutils import pr
 
 
 class Stat:
@@ -54,7 +55,7 @@ def load_stats() -> (List[Stat], None):
 
 
 def save_stats(stats: List[Stat]) -> None:
-    prl('Saving stats..', PRL_VERB)
+    pr('Saving stats..', '*')
     file = join(Config.workdir, Config.stats_file)
 
     json = {}
@@ -66,11 +67,11 @@ def save_stats(stats: List[Stat]) -> None:
 
 
 def update_stats(timestamp: float, results: Tuple[List[CheckResult], List[str]]) -> None:
-    prl('Updating stats..', PRL_VERB)
+    pr('Updating stats..', '*')
 
     stats = load_stats()
     if stats is None:
-        prl('No stats file found, creating new', PRL_VERB)
+        pr('No stats file found, creating new', '*')
         stats = []
     for down in results[1]:
         for stat in stats:

@@ -1,7 +1,8 @@
 from argparse import ArgumentParser
 from os import path, mkdir, environ
 
-from utils import colored, PRL_VERB, PRL_WARN
+from termcolor import colored
+from interutils import pr
 
 
 class Config:
@@ -25,7 +26,6 @@ class Config:
 
     @classmethod
     def parse_args(cls):
-        from utils import prl  # Avoid circular imports situation
         args = Args.parse_arguments()
 
         # General
@@ -33,47 +33,47 @@ class Config:
             cls.verbose = args.verbose
         if args.timeout:
             cls.timeout = args.timeout
-            prl('Timeout set to' + colored(cls.timeout, 'cyan'), PRL_VERB)
+            pr('Timeout set to' + colored(cls.timeout, 'cyan'), '*')
         if args.threads:
             cls.threads = args.threads
-            prl('Using %s threads' % colored(cls.threads, 'cyan'), PRL_VERB)
+            pr('Using %s threads' % colored(cls.threads, 'cyan'), '*')
         if args.no_shuffle:
             cls.dont_shuffle = args.no_shuffle
-            prl("Won't shuffle list after loading", PRL_VERB)
+            pr("Won't shuffle list after loading", '*')
 
         # Workspace
         if args.workdir:
             if not path.isdir(args.workdir):
-                prl('No such directory: ' + colored(args.workdir, 'cyan'), PRL_WARN)
+                pr('No such directory: ' + colored(args.workdir, 'cyan'), '!')
             else:
                 cls.workdir = args.workdir
-                prl('Workdir is now: ' + colored(args.workdir, 'cyan'), PRL_VERB)
+                pr('Workdir is now: ' + colored(args.workdir, 'cyan'), '*')
         if args.list_file:
             cls.list_file = args.list_file
-            prl('List file is now: ' + colored(args.list_name, 'cyan'), PRL_VERB)
+            pr('List file is now: ' + colored(args.list_name, 'cyan'), '*')
         if args.stats_file:
             cls.stats_file = args.stats_file
-            prl('Stats file is now: ' + colored(args.stats_name, 'cyan'), PRL_VERB)
+            pr('Stats file is now: ' + colored(args.stats_name, 'cyan'), '*')
 
         # Protocols
         if args.socks:
             cls.protocols = ('socks5', 'socks4')
-            prl('Checking only %s and %s' % (colored('SOCKS5', 'blue'), colored('SOCKS4', 'blue')))
+            pr('Checking only %s and %s' % (colored('SOCKS5', 'blue'), colored('SOCKS4', 'blue')))
         elif args.hyper:
             cls.protocols = ('https', 'http')
-            prl('Checking only %s and %s' % (colored('HTTP', 'blue'), colored('HTTPS', 'blue')))
+            pr('Checking only %s and %s' % (colored('HTTP', 'blue'), colored('HTTPS', 'blue')))
         elif args.socks5_only:
             cls.protocols = tuple('socks5')
-            prl('Checking only %s' % colored('SOCKS5', 'blue'))
+            pr('Checking only %s' % colored('SOCKS5', 'blue'))
         elif args.socks4_only:
             cls.protocols = tuple('socks4')
-            prl('Checking only %s' % colored('SOCKS4', 'blue'))
+            pr('Checking only %s' % colored('SOCKS4', 'blue'))
         elif args.https_only:
             cls.protocols = tuple('https')
-            prl('Checking only %s' % colored('HTTPS', 'blue'))
+            pr('Checking only %s' % colored('HTTPS', 'blue'))
         elif args.http_only:
             cls.protocols = tuple('http')
-            prl('Checking only %s' % colored('HTTP', 'blue'))
+            pr('Checking only %s' % colored('HTTP', 'blue'))
         else:
             cls.protocols = ('socks5', 'socks4', 'https', 'http')
 
