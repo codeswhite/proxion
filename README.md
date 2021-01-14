@@ -1,61 +1,36 @@
-# proxion
-
+## Proxion
 Automated multi-threaded proxy checker with uptime and latency statistics
 
-## Getting Started
+## Running
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
+### PyPi
+Install from PyPI repo (using `pip`)
 
-### Cloning
+    $ pip install proxion
 
-First you may clone the project into your local storage:
+### AUR
+Install from AUR repo (using any AUR helper like `yay` for example)
 
-```
-git clone https://github.com/WhiteOnBlackCode/proxion
-cd proxion
-```
+    $ yay -S python-proxion
 
-### Virtual Environment
+## Usage
+After installing on your machine run the script with:
 
-This step is optional yet recommended by many.
+    $ proxion --help
 
-You may install python-virtualenv package by using pip:
-
-```
-pip install virtualenv
-```
-
-To create a new virtual environment in current directory:
-
-```
-virtualenv .
-```
-
-Afterwards you'll be able to activate the virtual environment:
-
-```
-source venv/bin/activate
-```
-
-### Dependencies
-
-The script is built for python3 and requires few python packages:
-* requests
-* PySocks
-* termcolor
-
-Install required packages with pip --requirement switch:
-
-```
-pip install -r requirements.txt
-```
-
-### Usage
-
-```
-python3 proxion.py --help
-```
-
-## Notes
+### Notes
 
 The script will create 'proxies' directory in home directory and will expect to find there 'proxylist.txt'
+
+## Contributing
+This project welcomes with open arms any intent to contribute in any way :)
+
+The following instructions are for anyone who is interested in setting up the project locally for development/testing purposes:
+
+    $ git clone https://github.com/codeswhite/proxion
+    $ cd ./proxion
+    $ pipenv install
+
+Note that installing requirements can be **alternatively** done via basic `pip`:
+
+    $ pip install -r requirements.txt
