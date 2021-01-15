@@ -58,10 +58,12 @@ class Config:
         # Protocols
         if args.socks:
             cls.protocols = ('socks5', 'socks4')
-            pr('Checking only %s and %s' % (colored('SOCKS5', 'blue'), colored('SOCKS4', 'blue')))
+            pr('Checking only %s and %s' %
+               (colored('SOCKS5', 'blue'), colored('SOCKS4', 'blue')))
         elif args.hyper:
             cls.protocols = ('https', 'http')
-            pr('Checking only %s and %s' % (colored('HTTP', 'blue'), colored('HTTPS', 'blue')))
+            pr('Checking only %s and %s' %
+               (colored('HTTP', 'blue'), colored('HTTPS', 'blue')))
         elif args.socks5_only:
             cls.protocols = tuple('socks5')
             pr('Checking only %s' % colored('SOCKS5', 'blue'))
@@ -82,9 +84,12 @@ class Args:
     @classmethod
     def parse_arguments(cls):
         parser = ArgumentParser()
-        cls.general_args(parser.add_argument_group(colored('~=~ GENERAL ~=~', 'green')))
-        cls.workspace_args(parser.add_argument_group(colored('~=~ WORKSPACE ~=~', 'green')))
-        cls.proto_args(parser.add_argument_group(colored('~=~ PROTOCOLS ~=~', 'green')))
+        cls.general_args(parser.add_argument_group(
+            colored('~=~ GENERAL ~=~', 'green')))
+        cls.workspace_args(parser.add_argument_group(
+            colored('~=~ WORKSPACE ~=~', 'green')))
+        cls.proto_args(parser.add_argument_group(
+            colored('~=~ PROTOCOLS ~=~', 'green')))
         return parser.parse_args()
 
     @classmethod

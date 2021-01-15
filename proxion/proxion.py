@@ -3,14 +3,14 @@ from random import choice
 from threading import active_count
 from time import sleep, time
 from typing import Generator, Dict, List, Tuple
+from ipaddress import AddressValueError, IPv4Address
 
-from .utils import check_proxy_format
 from .checker import CheckerThread, CheckResult
 from .conf import Config
 from .stats import update_stats
 
 from termcolor import colored, cprint
-from interutils import pr, clear
+from interutils import clear, pr
 
 banner = """
     ____                  _                      
@@ -21,6 +21,33 @@ banner = """
 """
 
 PROXY_TYPES = ('socks5', 'socks4', 'https', 'http')
+
+
+def _check_proxy_format(proxy) -> bool:
+    # Check that the given proxy is a string and has a valid address + port
+
+    def is_ip_address(ip: str) -> bool:
+        try:
+            IPv4Address(ip)
+            return True
+        except AddressValueError:
+            return False
+
+    if type(proxy) is not str:
+        return False
+    x = proxy.strip().split(':')
+    if len(x) != 2:
+        return False
+    ip, port = x
+    try:
+        port = int(port)
+    except ValueError:
+        return False
+    if port < 0 or port > 65535:
+        return False
+    if not is_ip_address(ip):
+        return False
+    return True
 
 
 def show_status(results: Tuple[List[CheckResult], List[str]]) -> None:
@@ -67,7 +94,7 @@ def load_list() -> (Generator[str, None, None], None):
     with open(file) as f:
         for pip in f:
             pip = pip.strip()
-            if not check_proxy_format(pip):
+            if not _check_proxy_format(pip):
                 pr('Bad proxy format: "%s", skipping!' % pip, '!')
                 continue
             yield pip

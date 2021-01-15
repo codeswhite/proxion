@@ -34,9 +34,8 @@ def perform_check(protocol: str, pip: str) -> (CheckResult, None):
         endpoint_protocol = protocol if protocol == 'http' else 'https'
         t = time()
         # Attempt to get our current IP (use the proxy), expect JSON data!
-        resp = requests.get(endpoint_protocol + '://ipinfo.io',
-                            proxies=create_proxy_dict(pip, protocol, endpoint_protocol),
-                            timeout=Config.timeout)
+        resp = requests.get(endpoint_protocol + '://ipinfo.io', proxies=create_proxy_dict(
+            pip, protocol, endpoint_protocol), timeout=Config.timeout)
         t = time() - t
         try:
             # Attempt to decode the received data
@@ -48,12 +47,15 @@ def perform_check(protocol: str, pip: str) -> (CheckResult, None):
         except JSONDecodeError as e:
             # Any failure will be a sign of the proxy not forwarding us,
             # but instead returning some custom data to us!
-            pr('Status Code: %d, Text: \n%s' % (resp.status_code, resp.text), '*')
+            pr('Status Code: %d, Text: \n%s' %
+               (resp.status_code, resp.text), '*')
             pr('An JSON Decode error "%s" occurred!' % e, '*')
     except requests.ConnectionError:
-        pr('%s failed for %s' % (colored(protocol, 'blue'), colored(pip, 'green')), '*')
+        pr('%s failed for %s' %
+           (colored(protocol, 'blue'), colored(pip, 'green')), '*')
     except requests.ReadTimeout:
-        pr('%s timed out for %s' % (colored(protocol, 'blue'), colored(pip, 'green')), '*')
+        pr('%s timed out for %s' %
+           (colored(protocol, 'blue'), colored(pip, 'green')), '*')
     except requests.exceptions.InvalidSchema:
         pr('SOCKS dependencies unmet!', 'X')
         exit(-1)
@@ -72,12 +74,14 @@ class CheckerThread(threading.Thread):
         # try
         while len(self.proxies_to_check) > 0:
             pip = self.proxies_to_check.pop(0)
-            pr('Thread %s took: %s' % (colored(self.name, 'cyan'), colored(pip, 'green')), '*')
+            pr('Thread %s took: %s' %
+               (colored(self.name, 'cyan'), colored(pip, 'green')), '*')
 
             for p in Config.protocols:
                 r = perform_check(p, pip)
                 if r is not None:
-                    pr('Working %s proxy @ ' % colored(r.proto, 'blue') + colored(pip, 'green'), '*')
+                    pr('Working %s proxy @ ' %
+                       colored(r.proto, 'blue') + colored(pip, 'green'), '*')
                     self.working.append(r)
                     break
             else:
