@@ -6,7 +6,6 @@ name = "pypi"
 [packages]
 requests = "*"
 interutils = "*"
-PySocks = "*"
 
 [dev-packages]
 
