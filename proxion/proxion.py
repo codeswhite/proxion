@@ -58,8 +58,7 @@ def show_status(results: Tuple[List[CheckResult], List[str]]) -> None:
     protocols = sort_protocols(working)
     for proto in protocols.keys():
         if len(protocols[proto]) > 0:
-            text += ' %s:%s' % (colored(proto.upper(), 'blue'),
-                                colored(len(protocols[proto]), 'green'))
+            text += f' {colored(proto.upper(), "blue")}:{colored(len(protocols[proto]), "green")}'
     pr(text)
     pr('Down: ' + colored(len(down), 'cyan'))
     pr('Total tried: ' + colored(len(working) + len(down), 'cyan'))
@@ -95,7 +94,7 @@ def load_list() -> (Generator[str, None, None], None):
         for pip in f:
             pip = pip.strip()
             if not _check_proxy_format(pip):
-                pr('Bad proxy format: "%s", skipping!' % pip, '!')
+                pr(f'Bad proxy format: "{pip}", skipping!', '!')
                 continue
             yield pip
 
@@ -108,8 +107,7 @@ def proxion():
 
     # Start threading
     threads = []
-    pr('Checking %s proxies on %s threads' % (
-        colored(len(proxies_to_check), 'green'), colored(Config.threads, 'cyan')))
+    pr(f'Checking {colored(len(proxies_to_check), "green")} proxies on {colored(Config.threads, "cyan")} threads')
     for i in range(Config.threads):
         threads.append(CheckerThread(proxies_to_check))
         threads[i].setDaemon(True)

@@ -36,7 +36,7 @@ class Config:
             pr('Timeout set to' + colored(cls.timeout, 'cyan'), '*')
         if args.threads:
             cls.threads = args.threads
-            pr('Using %s threads' % colored(cls.threads, 'cyan'), '*')
+            pr(f'Using {colored(cls.threads, "cyan")} threads', '*')
         if args.no_shuffle:
             cls.dont_shuffle = args.no_shuffle
             pr("Won't shuffle list after loading", '*')
@@ -58,24 +58,22 @@ class Config:
         # Protocols
         if args.socks:
             cls.protocols = ('socks5', 'socks4')
-            pr('Checking only %s and %s' %
-               (colored('SOCKS5', 'blue'), colored('SOCKS4', 'blue')))
+            pr(f'Checking only {colored("SOCKS5", "blue")} and {colored("SOCKS4", "blue")}')
         elif args.hyper:
             cls.protocols = ('https', 'http')
-            pr('Checking only %s and %s' %
-               (colored('HTTP', 'blue'), colored('HTTPS', 'blue')))
+            pr(f'Checking only {colored("HTTP", "blue")} and {colored("HTTPS", "blue")}')
         elif args.socks5_only:
-            cls.protocols = tuple('socks5')
-            pr('Checking only %s' % colored('SOCKS5', 'blue'))
+            cls.protocols = ('socks5',)
+            pr(f'Checking only {colored("SOCKS5", "blue")}')
         elif args.socks4_only:
-            cls.protocols = tuple('socks4')
-            pr('Checking only %s' % colored('SOCKS4', 'blue'))
+            cls.protocols = ('socks4',)
+            pr(f'Checking only {colored("SOCKS4", "blue")}')
         elif args.https_only:
-            cls.protocols = tuple('https')
-            pr('Checking only %s' % colored('HTTPS', 'blue'))
+            cls.protocols = ('https',)
+            pr(f'Checking only {colored("HTTPS", "blue")}')
         elif args.http_only:
-            cls.protocols = tuple('http')
-            pr('Checking only %s' % colored('HTTP', 'blue'))
+            cls.protocols = ('http',)
+            pr(f'Checking only {colored("HTTP", "blue")}')
         else:
             cls.protocols = ('socks5', 'socks4', 'https', 'http')
 
@@ -97,20 +95,20 @@ class Args:
         args.add_argument('-v', '--verbose', action='store_true',
                           help='Show verbose info')
         args.add_argument('--timeout', metavar='[sec]', type=int,
-                          help='How long to wait for a response (default: %s)' % colored(Config.timeout, 'green'))
+                          help=f'How long to wait for a response (default: {colored(Config.timeout, "green")})')
         args.add_argument('--threads', type=int,
-                          help='How many threads should we run (default: %s)' % colored(Config.threads, 'green'))
+                          help=f'How many threads should we run (default: {colored(Config.threads, "green")})')
         args.add_argument('--no-shuffle', action='store_true',
                           help="Don't shuffle proxy list after loading")
 
     @classmethod
     def workspace_args(cls, args):
         args.add_argument('--workdir', type=str,
-                          help='The working directory of the script (default: %s)' % colored(Config.workdir, 'green'))
+                          help=f'The working directory of the script (default: {colored(Config.workdir, "green")})')
         args.add_argument('--list-file', type=str,
-                          help='The proxy-list file name (default: %s)' % colored(Config.list_file, 'green'))
+                          help=f'The proxy-list file name (default: {colored(Config.list_file, "green")})')
         args.add_argument('--stats-file', type=str,
-                          help='The proxy-stats file name (default: %s)' % colored(Config.stats_file, 'green'))
+                          help=f'The proxy-stats file name (default: {colored(Config.stats_file, "green")})')
 
     @classmethod
     def proto_args(cls, args):

@@ -18,7 +18,7 @@ def main():
         print()
         pr('Interrupted, exiting!', '!')
     # except Exception as e:
-    #     prl('An "%s" exception occurred on the main thread!' % e, 'X')
+    #     prl(f'An "{e}" exception occurred on the main thread!', 'X')
 
 
 if __name__ == "__main__":

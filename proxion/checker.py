@@ -43,19 +43,16 @@ def perform_check(protocol: str, pip: str) -> (CheckResult, None):
             try:
                 return CheckResult(pip, protocol, json, t)
             except KeyError as e:
-                pr('Result parsing "%s":' % e + json, '*')
+                pr(f'Result parsing "{e}":' + json, '*')
         except JSONDecodeError as e:
             # Any failure will be a sign of the proxy not forwarding us,
             # but instead returning some custom data to us!
-            pr('Status Code: %d, Text: \n%s' %
-               (resp.status_code, resp.text), '*')
-            pr('An JSON Decode error "%s" occurred!' % e, '*')
+            pr(f'Status Code: {resp.status_code}, Text: \n' + resp.text, '*')
+            pr(f'An JSON Decode error "{e}" occurred!', '*')
     except requests.ConnectionError:
-        pr('%s failed for %s' %
-           (colored(protocol, 'blue'), colored(pip, 'green')), '*')
+        pr(f'{colored(protocol, "blue")} failed for {colored(pip, "green")}', '*')
     except requests.ReadTimeout:
-        pr('%s timed out for %s' %
-           (colored(protocol, 'blue'), colored(pip, 'green')), '*')
+        pr(f'{colored(protocol, "blue")} timed out for {colored(pip, "green")}', '*')
     except requests.exceptions.InvalidSchema:
         pr('SOCKS dependencies unmet!', 'X')
         exit(-1)
@@ -74,19 +71,18 @@ class CheckerThread(threading.Thread):
         # try
         while len(self.proxies_to_check) > 0:
             pip = self.proxies_to_check.pop(0)
-            pr('Thread %s took: %s' %
-               (colored(self.name, 'cyan'), colored(pip, 'green')), '*')
+            pr(f'Thread {colored(self.name, "cyan")} took: {colored(pip, "green")}', '*')
 
             for p in Config.protocols:
                 r = perform_check(p, pip)
                 if r is not None:
-                    pr('Working %s proxy @ ' %
-                       colored(r.proto, 'blue') + colored(pip, 'green'), '*')
+                    pr(f'Working {colored(r.proto, "blue")} proxy @ ' +
+                       colored(pip, "green"), '*')
                     self.working.append(r)
                     break
             else:
                 pr('Proxy is down!', '*')
                 self.down.append(pip)
         # except Exception as e:
-        #     pr('An "%s" exception occurred on %s!' % (e, colored(self.name)), 'X')
+        #     pr(f'An "{e}" exception occurred on {colored(self.name)}!', 'X')
         #     print(pip)
