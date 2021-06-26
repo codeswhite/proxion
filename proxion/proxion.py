@@ -1,4 +1,4 @@
-from os.path import join, isfile
+from pathlib import Path
 from random import choice
 from threading import active_count
 from time import sleep, time
@@ -88,21 +88,19 @@ def collect_results(threads: list):
 
 
 def load_list() -> (Generator[str, None, None], None):
-    '''Load proxies from workdir specified in config'''
+    '''Load proxies from store specified in config'''
 
     pr('Loading proxies..', '*')
-    file = join(Config.workdir, Config.list_file)
-    if not isfile(file):
-        pr('No such file: ' + file, 'X')
+    list_file = Config.get_list_file()
+    if not list_file.is_file():
+        pr(f'No such file: {str(list_file)}', 'X')
         return
 
-    with open(file) as f:
-        for pip in f:
-            pip = pip.strip()
-            if not _check_proxy_format(pip):
-                pr(f'Bad proxy format: "{pip}", skipping!', '!')
-                continue
-            yield pip
+    for pip in list_file.read_text().splitlines():
+        if not _check_proxy_format(pip):
+            pr(f'Bad proxy format: "{pip}", skipping!', '!')
+            continue
+        yield pip
 
 
 def proxion():

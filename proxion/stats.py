@@ -1,5 +1,5 @@
 from json import loads, dumps, JSONDecodeError
-from os.path import join, isfile
+from pathlib import Path
 from typing import List, Dict, Tuple
 
 from .checker import CheckResult
@@ -36,13 +36,12 @@ def create_stat(result: CheckResult, timestamp: float):
 
 
 def load_stats() -> (List[Stat], None):
-    file = join(Config.workdir, Config.stats_file)
-    if not isfile(file):
+    stats_file: Path = Config.get_stats_file()
+    if not stats_file.is_file():
         return
 
     try:
-        with open(file) as f:
-            json = loads(f.read())
+        json = loads(stats_file.read_text())
     except JSONDecodeError:
         return
     if not json:
@@ -56,14 +55,13 @@ def load_stats() -> (List[Stat], None):
 
 def save_stats(stats: List[Stat]) -> None:
     pr('Saving stats..', '*')
-    file = join(Config.workdir, Config.stats_file)
+    stats_file = Config.get_stats_file()
 
     json = {}
     for s in stats:
         json.update(s.serialize())
 
-    with open(file, 'w') as f:
-        f.write(dumps(json))
+    stats_file.write_text(dumps(json))
 
 
 def update_stats(timestamp: float, results: Tuple[List[CheckResult], List[str]]) -> None:

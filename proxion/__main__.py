@@ -4,15 +4,16 @@ from random import choice
 from .conf import Config
 from .proxion import proxion, banner
 
-from termcolor import colored, cprint
+from termcolor import cprint
 from interutils import pr, clear
+
 
 def main():
     try:
-        c = Config()  # Initialize configuration
+        Config()
+
         clear()
         cprint(banner, choice(('red', 'green', 'blue')))
-        c.parse_args()  # Parse arguments
         proxion()  # Enter the Matrix
     except KeyboardInterrupt:
         print()

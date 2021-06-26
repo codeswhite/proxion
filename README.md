@@ -1,29 +1,37 @@
 ## Proxion
-Automated multi-threaded proxy checker with uptime and latency statistics
+Manage proxy servers for your other tools!
 
-## Running
+Featuring:
+- Multi-threaded proxy checking
+- Uptime and latency statistics
+- Dispatcher API - for use in your other scripts! 
 
-### PyPi
-Install from PyPI repo (using `pip`)
+## Examples
+
+> TODO
+
+## Install
+
+From PyPI repo (using `pip`)
 
     $ pip install proxion
 
-### AUR
-Install from AUR repo (using any AUR helper like `yay` for example)
+From AUR repo (using any AUR helper like `yay` for example)
 
     $ yay -S python-proxion
+
+From github clone
+
+    $ git clone https://github.com/codeswhite/proxion
+    $ pip install ./proxion
 
 ## Usage
 After installing on your machine run the script with:
 
     $ proxion --help
 
-### Notes
-
-The script will create 'proxies' directory in home directory and will expect to find there 'proxylist.txt'
-
 ## Contributing
-This project welcomes with open arms any intent to contribute in any way :)
+This project welcomes contribution! :)
 
 The following instructions are for anyone who is interested in setting up the project locally for development/testing purposes:
 
@@ -31,6 +39,6 @@ The following instructions are for anyone who is interested in setting up the pr
     $ cd ./proxion
     $ pipenv install
 
-Note that installing requirements can be **alternatively** done via basic `pip`:
+Note: Installing the requirements can _alternatively_ be achieved via basic `pip`:
 
     $ pip install -r requirements.txt

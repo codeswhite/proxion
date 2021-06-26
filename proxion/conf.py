@@ -1,8 +1,8 @@
 from argparse import ArgumentParser
-from os import path, mkdir, environ
+from pathlib import Path
 
 from termcolor import colored
-from interutils import pr
+from interutils import pr, DictConfig
 
 
 class Config:
@@ -10,19 +10,32 @@ class Config:
     def __init__(cls):
         # General
         cls.verbose = False
+
+        # Checker
         cls.timeout = 10
         cls.threads = 4
         cls.dont_shuffle = False
 
         # Workspace
-        cls.workdir = environ['HOME'] + '/proxies'
-        if not path.isdir(cls.workdir):
-            mkdir(cls.workdir)
+        cls.store = Path().home().joinpath('.cache', 'proxion')
+        cls.store.mkdir(exist_ok=True)
+
         cls.list_file = 'proxylist.txt'
         cls.stats_file = 'proxy-stats.json'
 
         # Proto
         cls.protocols = None
+
+        # Parse arguments
+        cls.parse_args()
+
+    @classmethod
+    def get_stats_file(cls) -> Path:
+        return cls.store.joinpath(cls.stats_file)
+
+    @classmethod
+    def get_list_file(cls) -> Path:
+        return cls.store.joinpath(cls.list_file)
 
     @classmethod
     def parse_args(cls):
@@ -42,12 +55,17 @@ class Config:
             pr("Won't shuffle list after loading", '*')
 
         # Workspace
-        if args.workdir:
-            if not path.isdir(args.workdir):
-                pr('No such directory: ' + colored(args.workdir, 'cyan'), '!')
+        if args.store:
+            try:
+                args.store = Path(args.store)
+                if not args.store.isdir():
+                    raise FileNotFoundError
+            except:
+                pr(f'No such directory: {colored(str(args.store), "cyan")} , using default!', '!')
             else:
-                cls.workdir = args.workdir
-                pr('Workdir is now: ' + colored(args.workdir, 'cyan'), '*')
+                cls.store = args.store
+                pr('Store directory is now: ' +
+                   colored(str(args.store), 'cyan'), '*')
         if args.list_file:
             cls.list_file = args.list_file
             pr('List file is now: ' + colored(args.list_name, 'cyan'), '*')
@@ -84,35 +102,31 @@ class Args:
         parser = ArgumentParser()
         cls.general_args(parser.add_argument_group(
             colored('~=~ GENERAL ~=~', 'green')))
-        cls.workspace_args(parser.add_argument_group(
-            colored('~=~ WORKSPACE ~=~', 'green')))
-        cls.proto_args(parser.add_argument_group(
-            colored('~=~ PROTOCOLS ~=~', 'green')))
+        cls.checker_args(parser.add_argument_group(
+            colored('~=~ CHECKER ~=~', 'green')))
         return parser.parse_args()
 
     @classmethod
     def general_args(cls, args):
         args.add_argument('-v', '--verbose', action='store_true',
                           help='Show verbose info')
-        args.add_argument('--timeout', metavar='[sec]', type=int,
-                          help=f'How long to wait for a response (default: {colored(Config.timeout, "green")})')
-        args.add_argument('--threads', type=int,
-                          help=f'How many threads should we run (default: {colored(Config.threads, "green")})')
-        args.add_argument('--no-shuffle', action='store_true',
-                          help="Don't shuffle proxy list after loading")
-
-    @classmethod
-    def workspace_args(cls, args):
-        args.add_argument('--workdir', type=str,
-                          help=f'The working directory of the script (default: {colored(Config.workdir, "green")})')
+        args.add_argument('--store', type=str,
+                          help=f'The storage directory of the script (default: {colored(Config.store, "green")})')
         args.add_argument('--list-file', type=str,
                           help=f'The proxy-list file name (default: {colored(Config.list_file, "green")})')
         args.add_argument('--stats-file', type=str,
                           help=f'The proxy-stats file name (default: {colored(Config.stats_file, "green")})')
 
     @classmethod
-    def proto_args(cls, args):
+    def checker_args(cls, args):
         args = args.add_mutually_exclusive_group()
+
+        args.add_argument('--timeout', metavar='[sec]', type=int,
+                          help=f'How long to wait for a response (default: {colored(Config.timeout, "green")})')
+        args.add_argument('--threads', type=int,
+                          help=f'How many threads should we run (default: {colored(Config.threads, "green")})')
+        args.add_argument('--no-shuffle', action='store_true',
+                          help="Don't shuffle proxy list after loading")
 
         args.add_argument('--socks', action='store_true',
                           help='Only check SOCKS4 & SOCKS5 protocols')
