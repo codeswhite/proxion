@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="proxion",
-    version="1.4.0",
+    version="0.9.0",
     description="Multi-threaded proxy checker with uptime and latency statistics",
     url="https://github.com/codeswhite/proxion",
     classifiers=[
