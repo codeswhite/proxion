@@ -1,13 +1,15 @@
-from argparse import ArgumentParser
+from argparse import ArgumentParser, _ArgumentGroup
 from pathlib import Path
 
+from .common import is_proxy_format
+
 from termcolor import colored
-from interutils import pr, DictConfig
+from interutils import pr, cyan, choose, DictConfig
 
 
 class Config:
     @classmethod
-    def __init__(cls):
+    def init(cls) -> int:
         # General
         cls.verbose = False
 
@@ -24,10 +26,10 @@ class Config:
         cls.stats_file = 'proxy-stats.json'
 
         # Proto
-        cls.protocols = None
+        cls.protocols = ()
 
         # Parse arguments
-        cls.parse_args()
+        return cls.parse_args()
 
     @classmethod
     def get_stats_file(cls) -> Path:
@@ -38,23 +40,12 @@ class Config:
         return cls.store.joinpath(cls.list_file)
 
     @classmethod
-    def parse_args(cls):
+    def parse_args(cls) -> int:
         args = Args.parse_arguments()
 
         # General
         if args.verbose:
             cls.verbose = args.verbose
-        if args.timeout:
-            cls.timeout = args.timeout
-            pr('Timeout set to' + colored(cls.timeout, 'cyan'), '*')
-        if args.threads:
-            cls.threads = args.threads
-            pr(f'Using {colored(cls.threads, "cyan")} threads', '*')
-        if args.no_shuffle:
-            cls.dont_shuffle = args.no_shuffle
-            pr("Won't shuffle list after loading", '*')
-
-        # Workspace
         if args.store:
             try:
                 args.store = Path(args.store)
@@ -73,7 +64,54 @@ class Config:
             cls.stats_file = args.stats_file
             pr('Stats file is now: ' + colored(args.stats_name, 'cyan'), '*')
 
-        # Protocols
+        # Database
+        if args.add:
+            cls.db_mode = 'add'
+            modify_path = Path(args.add)
+            if modify_path.is_file():
+                pr(f'Adding a proxy list: {cyan(str(modify_path))}')
+                cls.modify_path = modify_path
+            else:
+                if is_proxy_format(args.add):
+                    pr(f'Adding a single proxy: {cyan(args.add)}')
+                    cls.modify_proxy = args.add
+                pr('No such file!', 'X')
+                return 1
+
+        elif args.remove:
+            cls.db_mode = 'remove'
+            modify_path = Path(args.remove)
+            if modify_path.is_file():
+                pr(f'Removing a proxy list: {cyan(str(modify_path))}')
+                cls.modify_path = modify_path
+            else:
+                if is_proxy_format(args.remove):
+                    pr(f'Removing a single proxy: {cyan(args.remove)}')
+                    cls.modify_proxy = args.remove
+                pr('No such file!', 'X')
+                return 1
+
+        elif args.clear_db:
+            c = choose(
+                prompt='Are you sure you wish to clear whole database?', default=1)
+            if c != 0:
+                return 0
+            elif c == 1:
+                # Clear database
+                # TODO
+                pass
+
+        # Checker
+        if args.timeout:
+            cls.timeout = args.timeout
+            pr('Timeout set to' + colored(cls.timeout, 'cyan'), '*')
+        if args.threads:
+            cls.threads = args.threads
+            pr(f'Using {colored(cls.threads, "cyan")} threads', '*')
+        if args.no_shuffle:
+            cls.dont_shuffle = args.no_shuffle
+            pr("Won't shuffle list after loading", '*')
+        # Checker - Protocols
         if args.socks:
             cls.protocols = ('socks5', 'socks4')
             pr(f'Checking only {colored("SOCKS5", "blue")} and {colored("SOCKS4", "blue")}')
@@ -102,12 +140,14 @@ class Args:
         parser = ArgumentParser()
         cls.general_args(parser.add_argument_group(
             colored('~=~ GENERAL ~=~', 'green')))
+        cls.database_args(parser.add_argument_group(
+            colored('~=~ DATABASE ~=~', 'green')))
         cls.checker_args(parser.add_argument_group(
             colored('~=~ CHECKER ~=~', 'green')))
         return parser.parse_args()
 
     @classmethod
-    def general_args(cls, args):
+    def general_args(cls, args: _ArgumentGroup):
         args.add_argument('-v', '--verbose', action='store_true',
                           help='Show verbose info')
         args.add_argument('--store', type=str,
@@ -118,7 +158,16 @@ class Args:
                           help=f'The proxy-stats file name (default: {colored(Config.stats_file, "green")})')
 
     @classmethod
-    def checker_args(cls, args):
+    def database_args(cls, args: _ArgumentGroup):
+        args.add_argument('-a', '--add', type=str,
+                          help="Path to a proxy list to add into the database")
+        args.add_argument('-r', '--remove', type=str,
+                          help="Either a proxy IP:PORT or path to a list of proxies to remove from the database")
+        args.add_argument('--clear-db', action='store_true',
+                          help="Empty the database")
+
+    @classmethod
+    def checker_args(cls, args: _ArgumentGroup):
         args = args.add_mutually_exclusive_group()
 
         args.add_argument('--timeout', metavar='[sec]', type=int,

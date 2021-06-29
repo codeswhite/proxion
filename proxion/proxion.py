@@ -3,8 +3,9 @@ from random import choice
 from threading import active_count
 from time import sleep, time
 from typing import Generator, Dict, List, Tuple
-from ipaddress import AddressValueError, IPv4Address
+from site import USER_BASE
 
+from .common import is_proxy_format, PROXY_TYPES
 from .checker import CheckerThread, CheckResult
 from .conf import Config
 from .stats import update_stats
@@ -12,42 +13,8 @@ from .stats import update_stats
 from termcolor import colored, cprint
 from interutils import clear, pr
 
-banner = """
-    ____                  _                      
-   / __ \_________  _  __(_)___  ____  
-  / /_/ / ___/ __ \| |/_/ / __ \/ __ \ 
- / ____/ /  / /_/ />  </ / /_/ / / / / 
-/_/   /_/   \____/_/|_/_/\____/_/ /_/  
-"""
-
-PROXY_TYPES = ('socks5', 'socks4', 'https', 'http')
-
-
-def _check_proxy_format(proxy) -> bool:
-    ''' Check that the given proxy is a string and has a valid address + port '''
-
-    def is_ip_address(ip: str) -> bool:
-        try:
-            IPv4Address(ip)
-            return True
-        except AddressValueError:
-            return False
-
-    if type(proxy) is not str:
-        return False
-    x = proxy.strip().split(':')
-    if len(x) != 2:
-        return False
-    ip, port = x
-    try:
-        port = int(port)
-    except ValueError:
-        return False
-    if port < 0 or port > 65535:
-        return False
-    if not is_ip_address(ip):
-        return False
-    return True
+banner = Path(USER_BASE).joinpath(
+    'proxion', 'assets', 'banner.txt').read_text()
 
 
 def show_status(results: Tuple[List[CheckResult], List[str]]) -> None:
@@ -97,7 +64,7 @@ def load_list() -> (Generator[str, None, None], None):
         return
 
     for pip in list_file.read_text().splitlines():
-        if not _check_proxy_format(pip):
+        if not is_proxy_format(pip):
             pr(f'Bad proxy format: "{pip}", skipping!', '!')
             continue
         yield pip

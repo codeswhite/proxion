@@ -10,10 +10,9 @@ from interutils import pr, clear
 
 def main():
     try:
-        Config()
-
+        Config().init()
         clear()
-        cprint(banner, choice(('red', 'green', 'blue')))
+        cprint(banner + '\n', choice(('red', 'green', 'blue')))
         proxion()  # Enter the Matrix
     except KeyboardInterrupt:
         print()
