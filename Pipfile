@@ -12,6 +12,7 @@ PySocks = "*"
 flake8 = "*"
 autopep8 = "*"
 pytest = "*"
+pytest-xdist = "*"
 
 [requires]
 python_version = "3.9"

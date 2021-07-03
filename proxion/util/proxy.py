@@ -8,11 +8,9 @@ from .common import is_proxy_format, InvalidProxyFormatError
 
 
 def assure_proxy_format(pip: str) -> None:
-    res = is_proxy_format(pip)
-    if not res:
+    if not is_proxy_format(pip):
         raise InvalidProxyFormatError(
             f'Invalid proxy supplied: ProxyIP={pip}')
-    return res
 
 
 class Proxy:
