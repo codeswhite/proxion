@@ -6,8 +6,11 @@ name = "pypi"
 [packages]
 requests = "*"
 interutils = "*"
+PySocks = "*"
 
 [dev-packages]
+flake8 = "*"
+autopep8 = "*"
 
 [requires]
 python_version = "3.9"
