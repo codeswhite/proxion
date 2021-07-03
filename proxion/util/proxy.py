@@ -18,7 +18,6 @@ def assure_proxy_format(pip: str) -> None:
 class Proxy:
     '''
     A definition of a proxy with info.
-    TODO Add enter_country
     '''
     pip: str
     protos: Set[str]

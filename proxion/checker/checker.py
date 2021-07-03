@@ -135,10 +135,7 @@ class ProxyChecker:
             }
             if self.verbose:
                 pr(f'Proxy {pip}: Testing {protocol} proto', '*')
-            '''
-            TODO take note of time took to perform this request without a proxy
-            and then compare it with the proxy timing, put in formula: (with / without) or the other way around.
-            '''
+
             _t = time()
             # Attempt to get our current IP (trough the proxy), expect JSON data!
             resp = requests.get('https://ipinfo.io/', proxies=proxies_dict,
