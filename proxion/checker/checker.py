@@ -84,10 +84,7 @@ class ProxyChecker:
                 for p in self.procs:
                     p.kill()
 
-                n_alive = self.active_children()
-                if not self.verbose:
-                    n_alive = len(n_alive)
-                while n_alive:
+                while n_alive := self.active_children():
                     sleep(0.25)
                     if time() - last_print > termination_print_interval:
                         last_print = time()
