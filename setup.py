@@ -23,9 +23,6 @@ setuptools.setup(
             'proxion = proxion:main',
         ],
     },
-    data_files=[
-        ('proxion/assets', ['assets/banner.txt']),
-    ],
     author="Max G",
     author_email="max3227@gmail.com",
     long_description=long_description,

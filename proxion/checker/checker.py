@@ -11,7 +11,6 @@ from termcolor import colored
 from interutils import cyan, pr
 
 from proxion.util import (
-    print_banner,
     Proxy,
 )
 from proxion import Defaults

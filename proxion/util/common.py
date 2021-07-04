@@ -7,16 +7,6 @@ from termcolor import cprint
 from interutils import clear
 
 
-banner = Path(USER_BASE).joinpath(
-    'proxion', 'assets', 'banner.txt').read_text()
-
-
-def print_banner(clean: bool = True) -> None:
-    if clean:
-        clear()
-    cprint(banner + '\n', choice(('red', 'green', 'blue')))
-
-
 class InvalidProxyFormatError(Exception):
     pass
 

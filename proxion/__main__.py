@@ -12,7 +12,6 @@ from proxion.util import (
     Proxy,
     parse_proxies_file,
     ProxyDB,
-    print_banner,
 )
 from proxion import Config
 from proxion.checker import ProxyChecker
@@ -22,9 +21,6 @@ def main() -> int:
     args = Config.init()
     if not args:
         return 1
-
-    if not args.verbose:
-        print_banner()
 
     if args.verbose:
         pr('Loading proxy DB.. ', '*', end='')
