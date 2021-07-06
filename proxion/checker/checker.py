@@ -75,56 +75,64 @@ class ProxyChecker:
 
         jobs_count = len(jobs)
         max_threads = min(max_threads, jobs_count)
-        pr(f'Checking {cyan(len(checklist))} proxies ({cyan(jobs_count)} jobs) on {cyan(max_threads)} threads')
+        pr('Checking %s proxies (%s jobs) on %s threads' % (
+            cyan(len(checklist)), cyan(jobs_count), cyan(max_threads)
+        ))
 
         self._terminate_flag = False
         with mp.Manager() as manager:
             self.up = manager.list()
             self.jobs_done = manager.Value('i', 0)
 
-            self.procs = []
+            procs = []
             for _ in range(max_threads):
-                self.procs.append(p := mp.Process(
+                procs.append(p := mp.Process(
                     target=self.worker, daemon=True))
                 p.start()
-
-            termination_print_interval = 2
-            print_interval = 3
-            last_print = time()
             try:
-                while self.active_children():
-                    sleep(0.25)
-                    if self.verbose and time() - last_print > print_interval:
-                        last_print = time()
-                        pr(f'Jobs done: [{self.jobs_done.value}/{jobs_count}] = {100 * int(self.jobs_done.value) / jobs_count}%', '*')
-                        self.show_status()
-
+                self.handle_checker_loop(procs, jobs_count)
             except KeyboardInterrupt:
-                print()
-                pr('Interrupted, Killing children!', '!')
-                self._terminate_flag = True
-                self.queue.close()
-                for p in self.procs:
-                    p.kill()
-
-                while n_alive := self.active_children():
-                    sleep(0.25)
-                    if time() - last_print > termination_print_interval:
-                        last_print = time()
-                        pr(f'Waiting for {cyan(n_alive)} children to exit', '*')
-                        pr(f'Jobs done: [{self.jobs_done.value}/{jobs_count}] = {100 * int(self.jobs_done.value) / jobs_count}%', '*')
-
+                self.handle_checker_interruption(procs, jobs_count)
             finally:
-                # pr('Joining remaining procs')
-                # pool.join()
                 pr('All children exited')
                 self.show_status()
                 # update_stats(time(), self.collect_results())
 
-    def active_children(self) -> int:
-        if not self.procs:
+    def handle_checker_loop(self, procs: Iterable[mp.Process], jobs_count: int):
+        print_interval = 3
+        last_print = time()
+        while self.active_children(procs):
+            sleep(0.25)
+            if self.verbose and time() - last_print > print_interval:
+                last_print = time()
+                pr('Jobs Progress: [%d/%d] = %d%%' % (
+                    self.jobs_done.value, jobs_count, self.jobs_done.value * 100 / jobs_count
+                ), '*')
+                self.show_status()
+
+    def handle_checker_interruption(self, procs: Iterable[mp.Process], jobs_count: int):
+        print()
+        pr('Interrupted, Killing children!', '!')
+        self._terminate_flag = True
+        self.queue.close()
+        for p in procs:
+            p.kill()
+
+        termination_print_interval = 2
+        last_print = time()
+        while n_alive := self.active_children(procs):
+            sleep(0.25)
+            if time() - last_print > termination_print_interval:
+                last_print = time()
+                pr(f'Waiting for {cyan(n_alive)} children to exit', '*')
+                percent_done = 100 * \
+                    int(self.jobs_done.value) / jobs_count
+                pr(f'Jobs done: [{self.jobs_done.value}/{jobs_count}] = {percent_done}%', '*')
+
+    def active_children(self, procs: Iterable[mp.Process]) -> int:
+        if not procs:
             return 0
-        return list(map(lambda p: p.is_alive(), self.procs)).count(True)
+        return list(map(lambda p: p.is_alive(), procs)).count(True)
 
     def worker(self):
         while not self.queue.empty():
