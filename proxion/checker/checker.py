@@ -24,7 +24,13 @@ class ProxyChecker:
     Manages the whole process of checking:
 
     Proxy checked first receives an array of parameters
-    Then we aggregate shuffle and 
+    Then we aggregate shuffle and enqueue jobs by splitting every proxy from
+        the checklist into as many as 4 separate checks per proxy.
+    A check is defined by target proxy's 'ip:port' and a protocol to check.
+
+    Then we spawn some child processes that will pop from the queue and run tests concurrently.
+    Meanwhile writing to a shared memory variable all the checks that we have done,
+    Allowing us to periodically show status of the checking process.
 
     '''
 
