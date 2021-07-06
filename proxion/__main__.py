@@ -13,7 +13,7 @@ from proxion.util import (
     parse_proxies_file,
     ProxyDB,
 )
-from proxion import Config
+from proxion import Config, Defaults
 from proxion.checker import ProxyChecker
 
 
@@ -115,7 +115,7 @@ def query(num: int = 0,
           fmt: str = 'json',
           json_inline: bool = False,
           info: bool = True,
-          proto: Iterable = tuple()) -> Iterable[Proxy]:
+          protos: Iterable = tuple()) -> Iterable[Proxy]:
 
     if fmt == 'json':
         buffer = []
@@ -123,6 +123,11 @@ def query(num: int = 0,
         buffer = ''
     count = 0
     for proxy in ProxyDB.get_proxies(not no_shuffle):
+        # Filter protocols by request
+        if protos:
+            if not len([prot for prot in proxy.protos if prot in protos]):
+                continue
+
         if fmt == 'json':
             if not info:
                 buffer.append(proxy.pip)

@@ -104,8 +104,7 @@ class Args:
         args.add_argument('-ni', '--no_info', action='store_false', dest='info',
                           help="Don't add proxy info")
         args.add_argument('-p', '--proto',
-                          choices=('hyper', 'http', 'https',
-                                   'socks', 'socks4', 'socks5'),
+                          choices=Defaults.checker_proxy_protocols,
                           type=str, nargs="+", help=f'Proxies protocols to get (default: {cyan("all")})')
 
     @classmethod
