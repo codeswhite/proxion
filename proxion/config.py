@@ -83,7 +83,6 @@ class Args:
             help='Either literal proxy(ies) or file(s) containing proxies line-by-line')
 
         sub_mode = args.add_mutually_exclusive_group()
-        # f'Addition mode (default: {cyan("auto")})')
         sub_mode.add_argument('-l', '--literal', action='store_const',
                               const='literal', dest='submode',
                               help='Pass as argument (one or more) proxies')
@@ -125,7 +124,6 @@ class Args:
                           help=f'Specify which protocols to check for (default: {cyan("all")})')
 
         sub_mode = args.add_mutually_exclusive_group()
-        # f'Addition mode (default: {cyan("auto")})')
         sub_mode.add_argument('-l', '--literal', type=str, nargs='+',
                               help='Pass as argument (one or more) proxies')
         sub_mode.add_argument('-f', '--file', type=str, nargs='+',
