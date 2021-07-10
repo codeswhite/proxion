@@ -44,7 +44,12 @@ def main() -> int:
     elif mode.startswith('q'):
         buffer = query(args.num, args.no_shuffle,
                        args.format, args.json_inline, args.info, args.protocols)
-        print(buffer)
+        if args.output:
+            output_f = Path(args.output)
+            pr(f'Dumping into "{cyan(output_f.resolve())}"', '*')
+            output_f.write_text(buffer)
+        else:
+            print(buffer)
 
     # Checker
     elif mode.startswith('c'):

@@ -107,6 +107,8 @@ class Args:
         args.add_argument('-p', '--protocols',
                           choices=Defaults.checker_proxy_protocols,
                           type=str, nargs="+", help=f'Proxies protocols to get (default: {cyan("all")})')
+        args.add_argument('-o', '--output', type=str,
+                          help='Output file to write results into')
 
     @classmethod
     def mode_check(cls, args: ArgumentParser):
