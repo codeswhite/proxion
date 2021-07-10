@@ -1,6 +1,7 @@
 from argparse import ArgumentParser
 from pathlib import Path
 from multiprocessing import cpu_count
+from typing import Set
 
 from termcolor import colored
 from interutils import pr, cyan
@@ -10,7 +11,8 @@ class Defaults:
     store = Path().home().joinpath('.cache', 'proxion')
     db_file = 'proxydb.json'
     checker_max_threads = cpu_count() - 1
-    checker_proxy_protocols = ('socks5', 'socks4', 'https', 'http')
+    checker_proxy_protocols: Set[str] = set(
+        {'socks5', 'socks4', 'https', 'http'})
     checker_timeout = 10
 
 
@@ -102,7 +104,7 @@ class Args:
                           help='Print JSON format as a one-liner')
         args.add_argument('-ni', '--no_info', action='store_false', dest='info',
                           help="Don't add proxy info")
-        args.add_argument('-p', '--proto',
+        args.add_argument('-p', '--protocols',
                           choices=Defaults.checker_proxy_protocols,
                           type=str, nargs="+", help=f'Proxies protocols to get (default: {cyan("all")})')
 
@@ -119,10 +121,20 @@ class Args:
         args.add_argument('-ns', '--no-shuffle', action='store_true',
                           help="Don't shuffle proxy list after loading")
         args.add_argument('-p', '--protocols', type=str, nargs='+',
-                          default=Defaults.checker_proxy_protocols,
                           choices=Defaults.checker_proxy_protocols,
                           help=f'Specify which protocols to check for (default: {cyan("all")})')
-
+        args.add_argument('-o', '--older', type=str,
+                          help='Filter proxies by last checked time, use time suffix ' +
+                          '[s, m, h, d, w, mo, y] (e.g. 10s, 20d, 3mo, 1y)')
+        args.add_argument('-l', '--latency', type=int,
+                          help='Filter proxies by latency [value should be preffixed with either + or - ' +
+                          'while the plus meaning values higher than and the minus meaning ' +
+                          'values lower than] (e.g. -90 , +150 )')
+        args.add_argument('-ec', '--exit-country', type=str, nargs='+',
+                          help='Filter proxies by exit country')
+        args.add_argument('-s', '--strict', type='store_true',
+                          help="When filtering don't include proxies without a value," +
+                          " only filter proxies that strictly have a value")
         sub_mode = args.add_mutually_exclusive_group()
         sub_mode.add_argument('-l', '--literal', type=str, nargs='+',
                               help='Pass as argument (one or more) proxies')

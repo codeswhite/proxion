@@ -1,7 +1,7 @@
 #!/bin/env python3
 import sys
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, Set
 from json import dumps
 
 from interutils import pr, cyan
@@ -14,7 +14,7 @@ from proxion.util import (
     ProxyDB,
 )
 from proxion import Config, Defaults
-from proxion.checker import ProxyChecker
+from proxion.checker import ProxyChecker, CheckerFilter
 
 
 def main() -> int:
@@ -43,7 +43,7 @@ def main() -> int:
     # Query
     elif mode.startswith('q'):
         buffer = query(args.num, args.no_shuffle,
-                       args.format, args.json_inline, args.info, args.proto)
+                       args.format, args.json_inline, args.info, args.protocols)
         print(buffer)
 
     # Checker
@@ -115,7 +115,7 @@ def query(num: int = 0,
           fmt: str = 'json',
           json_inline: bool = False,
           info: bool = True,
-          protos: Iterable = tuple()) -> Iterable[Proxy]:
+          protos: Set[str] = set({})) -> Iterable[Proxy]:
 
     if fmt == 'json':
         buffer = []
@@ -125,7 +125,7 @@ def query(num: int = 0,
     for proxy in ProxyDB.get_proxies(not no_shuffle):
         # Filter protocols by request
         if protos:
-            if not len([prot for prot in proxy.protos if prot in protos]):
+            if not len(proxy.protos & protos):
                 continue
 
         if fmt == 'json':
@@ -177,7 +177,9 @@ def checker(args):
         pr('Checking proxies from the ProxyDB')
         checklist = ProxyDB.get_proxies()
 
-    ProxyChecker(checklist, args.max_threads, args.protocols,
+    pcf = CheckerFilter(args.protocols, args.stale,
+                        args.latency, args.exit_country, args.strict)
+    ProxyChecker(checklist, args.max_threads, pcf,
                  args.timeout, args.no_shuffle, args.verbose)
 
 

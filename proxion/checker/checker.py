@@ -14,6 +14,7 @@ from proxion.util import (
     Proxy,
 )
 from proxion import Defaults
+from proxion.checker import CheckerFilter
 
 
 urllib3.disable_warnings()
@@ -36,8 +37,8 @@ class ProxyChecker:
 
     def __init__(self, checklist: Iterable[Proxy],
                  max_threads: int = Defaults.checker_max_threads,
-                 protocols: Tuple[str] = Defaults.checker_proxy_protocols,
                  timeout: int = Defaults.checker_timeout,
+                 checker_filter: CheckerFilter = None,
                  no_shuffle: bool = False,
                  verbose: bool = False):
 
@@ -46,34 +47,16 @@ class ProxyChecker:
 
         if max_threads < 1:
             raise ValueError(f'Invalid thread count: {max_threads}')
-        if not protocols:
-            raise ValueError('Please specify at least one protocol!')
         if not checklist:
             raise ValueError('No proxies to check!')
 
-        # Aggregate, randomize and enqueue jobs (checks)
-        jobs = []
-        for proxy in checklist:
-            # Get proxies to check
-            protos_to_check = Defaults.checker_proxy_protocols
-            if proxy.protos:
-                protos_to_check = proxy.protos
-            protos_to_check = [
-                p for p in protos_to_check if p in protocols]
-
-            for proto in protos_to_check:
-                # Randomize job list
-                pos = 0
-                jobs_count = len(jobs)
-                if not no_shuffle and jobs_count > 1:
-                    pos = choice(range(jobs_count))
-                jobs.insert(pos, (proxy, proto))
-
+        # Build job queue based on filter options
         self.queue = mp.Queue()
-        for job in jobs:
+        jobs_count = 0
+        for job in checker_filter.build_joblist(checklist, no_shuffle):
             self.queue.put(job)
+            jobs_count += 1
 
-        jobs_count = len(jobs)
         max_threads = min(max_threads, jobs_count)
         pr('Checking %s proxies (%s jobs) on %s threads' % (
             cyan(len(checklist)), cyan(jobs_count), cyan(max_threads)
