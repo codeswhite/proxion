@@ -102,7 +102,7 @@ class Args:
                           help=f'Format to return (default: {cyan("json")})')
         args.add_argument('--json-inline', action='store_true',
                           help='Print JSON format as a one-liner')
-        args.add_argument('-ni', '--no_info', action='store_false', dest='info',
+        args.add_argument('-ni', '--no-info', action='store_false', dest='info',
                           help="Don't add proxy info")
         args.add_argument('-p', '--protocols',
                           choices=Defaults.checker_proxy_protocols,
@@ -123,16 +123,16 @@ class Args:
         args.add_argument('-p', '--protocols', type=str, nargs='+',
                           choices=Defaults.checker_proxy_protocols,
                           help=f'Specify which protocols to check for (default: {cyan("all")})')
-        args.add_argument('-o', '--older', type=str,
+        args.add_argument('-ol', '--older', type=str,
                           help='Filter proxies by last checked time, use time suffix ' +
                           '[s, m, h, d, w, mo, y] (e.g. 10s, 20d, 3mo, 1y)')
-        args.add_argument('-l', '--latency', type=int,
+        args.add_argument('-la', '--latency', type=int,
                           help='Filter proxies by latency [value should be preffixed with either + or - ' +
                           'while the plus meaning values higher than and the minus meaning ' +
                           'values lower than] (e.g. -90 , +150 )')
         args.add_argument('-ec', '--exit-country', type=str, nargs='+',
                           help='Filter proxies by exit country')
-        args.add_argument('-s', '--strict', type='store_true',
+        args.add_argument('-s', '--strict', action='store_true',
                           help="When filtering don't include proxies without a value," +
                           " only filter proxies that strictly have a value")
         sub_mode = args.add_mutually_exclusive_group()
